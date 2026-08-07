@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アルティメット・グローグー 情報＆ショップ一覧</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; height: 100dvh; overflow: hidden; background: #f4f5f7; color: #333; }
+    
+    /* 左側サイドバー */
+    .sidebar { width: 380px; background: #ffffff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; flex-shrink: 0; }
+    
+    /* 左上ヘッダーエリア */
+    .header { padding: 18px 16px; background: #1a202c; color: #ffffff; display: flex; align-items: center; gap: 16px; }
+    .header-img { width: 100px; height: 100px; object-fit: contain; background: #ffffff; border-radius: 10px; padding: 4px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .header-text { flex: 1; min-width: 0; }
+    .header h1 { font-size: 16px; font-weight: 700; margin-bottom: 6px; line-height: 1.35; color: #f7fafc; white-space: nowrap; }
+    .header p { font-size: 11px; color: #a0aec0; line-height: 1.4; white-space: nowrap; }
+    
+    .shop-list { flex: 1; overflow-y: auto; padding: 16px; }
+    
+    .section-group { margin-bottom: 24px; }
+    .section-title { font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 6px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+    
+    /* カテゴリ別の色設定 */
+    .title-info { background: #fffaf0; color: #9c4221; border-left: 4px solid #dd6b20; }
+    .title-standard { background: #e6fffa; color: #234e52; border-left: 4px solid #319795; }
+    .title-limited { background: #fff5f5; color: #742a2a; border-left: 4px solid #e53e3e; }
+    .title-video { background: #ebf8ff; color: #2c5282; border-left: 4px solid #3182ce; }
+    .title-shorts { background: #faf5ff; color: #553c9a; border-left: 4px solid #805ad5; }
+    
+    .link-item { display: flex; flex-direction: column; padding: 10px 12px; margin-bottom: 8px; background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; text-decoration: none; color: #2b6cb0; font-size: 13px; cursor: pointer; transition: all 0.15s ease; }
+    .link-item:hover { background: #ebf8ff; border-color: #3182ce; }
+    .link-item.active { background: #3182ce; color: #ffffff; border-color: #3182ce; }
+    .link-item.active .shop-name { color: #ffffff; font-weight: 700; }
+    .link-item.active .note-text { color: #feebc8; }
+    .link-item.active .badge-block { background: #edf2f7; color: #2d3748; }
+    .link-item.active .badge-video, .link-item.active .badge-lottery, .link-item.active .badge-info { background: #feebc8; color: #744210; }
+    
+    .shop-header-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .shop-name { font-size: 13px; font-weight: 600; color: #2d3748; line-height: 1.4; }
+    .badge-block { font-size: 10px; background: #edf2f7; color: #718096; padding: 2px 6px; border-radius: 4px; font-weight: 600; flex-shrink: 0; }
+    .badge-video { font-size: 10px; background: #feefc3; color: #744210; padding: 2px 6px; border-radius: 4px; font-weight: 600; flex-shrink: 0; }
+    .badge-lottery { font-size: 10px; background: #feebc8; color: #744210; padding: 2px 6px; border-radius: 4px; font-weight: 600; flex-shrink: 0; }
+    .badge-info { font-size: 10px; background: #e2e8f0; color: #2d3748; padding: 2px 6px; border-radius: 4px; font-weight: 600; flex-shrink: 0; }
+    .note-text { font-size: 11px; color: #e53e3e; margin-top: 4px; line-height: 1.3; }
+
+    /* サイドバー最下部フッター */
+    .sidebar-footer { padding: 12px 16px; background: #edf2f7; border-top: 1px solid #e2e8f0; font-size: 12px; text-align: center; }
+    .author-link { color: #2b6cb0; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: color 0.2s; }
+    .author-link:hover { color: #1a365d; text-decoration: underline; }
+
+    /* 右側メイン表示エリア */
+    .main-pane { flex: 1; display: flex; flex-direction: column; background: #ffffff; min-width: 0; }
+    .top-bar { padding: 10px 20px; background: #f7fafc; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
+    .current-info { font-size: 13px; color: #4a5568; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .top-bar-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    
+    .reload-btn { font-size: 12px; font-weight: 600; color: #2d3748; background: #edf2f7; border: 1px solid #cbd5e0; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px; }
+    .reload-btn:hover { background: #e2e8f0; color: #1a202c; }
+    
+    .open-btn { font-size: 12px; font-weight: 600; color: #ffffff; background: #3182ce; padding: 6px 14px; border-radius: 6px; text-decoration: none; white-space: nowrap; transition: background 0.2s; }
+    .open-btn:hover { background: #2b6cb0; }
+    
+    .content-wrapper { flex: 1; position: relative; background: #edf2f7; overflow: hidden; }
+    iframe { width: 100%; height: 100%; border: none; }
+    
+    /* ローディング画面 */
+    .loading-overlay {
+      position: absolute; inset: 0; background: #ffffff; display: flex;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px; z-index: 10; color: #4a5568; font-size: 13px; text-align: center; padding: 24px;
+    }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid #e2e8f0;
+      border-top-color: #3182ce; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .loading-title { font-weight: 700; font-size: 14px; color: #2d3748; }
+    .loading-hint-box {
+      margin-top: 8px; padding: 12px 16px; background: #f7fafc; border: 1px solid #e2e8f0;
+      border-radius: 8px; max-width: 440px; font-size: 12px; color: #718096; line-height: 1.6;
+    }
+    .loading-hint-box strong { color: #2b6cb0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* 汎用スクロールコンテナ */
+    .scroll-container {
+      position: absolute; inset: 0; overflow-y: auto; padding: 24px;
+      background: #f8fafc; display: flex; flex-direction: column; align-items: center; gap: 20px; z-index: 5;
+    }
+    .info-card {
+      background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 24px; max-width: 620px; width: 100%; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .info-title { font-size: 18px; font-weight: 700; color: #1a202c; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .info-desc { font-size: 13px; color: #4a5568; line-height: 1.6; margin-bottom: 16px; }
+    
+    /* X通知案内用カード */
+    .notification-alert-box {
+      background: #ebf8ff; border: 1px solid #bee3f8; border-radius: 8px; padding: 16px; margin-bottom: 20px;
+    }
+    .notification-alert-title { font-size: 14px; font-weight: 700; color: #2b6cb0; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .notification-alert-text { font-size: 12px; color: #2c5282; line-height: 1.5; }
+    .account-link-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; text-align: center; padding: 10px 16px; background: #1da1f2;
+      color: #ffffff; font-weight: 700; font-size: 13px; text-decoration: none;
+      border-radius: 6px; transition: background 0.2s; margin-top: 10px;
+    }
+    .account-link-btn:hover { background: #0c85d0; }
+
+    .lottery-link-btn {
+      display: inline-block; width: 100%; text-align: center; padding: 12px 20px; background: #dd6b20;
+      color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none;
+      border-radius: 8px; transition: background 0.2s; margin-bottom: 20px;
+    }
+    .lottery-link-btn:hover { background: #c05621; }
+    
+    .tweets-wrapper { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; min-height: 300px; }
+    .tweet-box { display: flex; justify-content: center; width: 100%; min-height: 200px; }
+
+    /* ショート動画一覧 */
+    .shorts-container {
+      position: absolute; inset: 0; overflow-y: auto; padding: 24px; 
+      background: #0f172a; display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+      gap: 20px; justify-items: center; align-content: start; z-index: 5;
+    }
+    .short-card {
+      width: 100%; max-width: 240px; display: flex; flex-direction: column;
+      background: #1e293b; border-radius: 12px; overflow: hidden; 
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); border: 1px solid #334155;
+      cursor: pointer; transition: transform 0.2s, border-color 0.2s;
+    }
+    .short-card:hover {
+      transform: translateY(-4px);
+      border-color: #38bdf8;
+    }
+    .short-thumb-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      background: #000;
+      overflow: hidden;
+    }
+    .short-thumb-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .play-icon-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.3);
+      transition: background 0.2s;
+    }
+    .short-card:hover .play-icon-overlay {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    .play-circle {
+      width: 48px;
+      height: 48px;
+      background: #ff0000;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .play-triangle {
+      width: 0;
+      height: 0;
+      border-top: 9px solid transparent;
+      border-bottom: 9px solid transparent;
+      border-left: 15px solid #ffffff;
+      margin-left: 3px;
+    }
+    .short-card-footer {
+      padding: 10px; background: #1e293b; text-align: center;
+      font-size: 12px; color: #38bdf8; font-weight: 600;
+    }
+
+    /* スマホ・小画面対応 */
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100% !important; height: 40vh; max-height: 220px; }
+      .main-pane { height: 60vh; }
+      .shorts-container { grid-template-columns: repeat(2, 1fr); padding: 12px; gap: 10px; }
+    }
+  </style>
+
+  <!-- Twitter (X) Widgets SDK -->
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</head>
+<body>
+
+  <!-- 左側：サイドバー -->
+  <div class="sidebar">
+    <div class="header">
+      <img src="https://cdn.media.amplience.net/i/hasbropulse/G4483_Ultimate_Grogu_1_front%201?w=320&fmt=auto" alt="アルティメット・グローグー" class="header-img">
+      <div class="header-text">
+        <h1>アルティメット・グローグー</h1>
+        <p>取扱ショップ ＆ 動画コンテンツ</p>
+      </div>
+    </div>
+    <div class="shop-list" id="menuContainer"></div>
+    
+    <!-- 最下部：作成者リンク -->
+    <div class="sidebar-footer">
+      作成者 <a href="https://x.com/stswcb2025" target="_blank" class="author-link">セレブレは終わらねぇ ↗</a>
+    </div>
+  </div>
+
+  <!-- 右側：メイン表示エリア -->
+  <div class="main-pane">
+    <div class="top-bar">
+      <div class="current-info" id="currentInfo">読み込み中...</div>
+      <div class="top-bar-actions">
+        <!-- ショート動画再生時に表示される一覧へ戻るボタン -->
+        <button id="backToShortsBtn" class="reload-btn" style="display: none; background: #e2e8f0; color: #1a202c; font-weight: 700;">⬅ ショート一覧に戻る</button>
+        <button id="reloadBtn" class="reload-btn" title="コンテンツを再読み込み">🔄 再読み込み</button>
+        <a id="externalBtn" href="#" target="_blank" class="open-btn">新しいタブで直接開く ↗</a>
+      </div>
+    </div>
+    
+    <div class="content-wrapper">
+      <!-- ローディング画面 -->
+      <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <div class="loading-title">コンテンツを読み込んでいます...</div>
+        <div class="loading-hint-box">
+          読み込みに時間がかかる場合や画面が表示されない場合は、右上にある<br>
+          <strong>「🔄 再読み込み」</strong>で再取得するか、<br>
+          <strong>「新しいタブで直接開く ↗」</strong>から外部ページでご確認ください。
+        </div>
+      </div>
+
+      <!-- iframe埋め込み表示 -->
+      <iframe id="contentFrame" src="about:blank" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              referrerpolicy="strict-origin-when-cross-origin" 
+              allowfullscreen></iframe>
+
+      <!-- 抽選販売情報表示画面 -->
+      <div id="lotteryContainer" class="scroll-container" style="display: none;">
+        <div class="info-card">
+          <h2 class="info-title" style="color: #2c5282;">ホビーリンク・ジャパン 抽選販売案内</h2>
+          <p class="info-desc">
+            ホビーリンク・ジャパン（HLJ）による「スター・ウォーズ アルティメット・グローグー スタンダードエディション」の抽選販売概要および関連SNS告知です。
+          </p>
+          <a id="lotteryArticleBtn" href="#" target="_blank" class="lottery-link-btn">
+            HLJ 抽選販売応募概要ページを開く ↗
+          </a>
+          <div class="tweet-box" id="lotteryTweetBox"></div>
+        </div>
+      </div>
+
+      <!-- 販売情報について表示画面 -->
+      <div id="salesInfoContainer" class="scroll-container" style="display: none;">
+        <div class="info-card">
+          <h2 class="info-title">📢 アルティメット・グローグー 発売情報・更新案内</h2>
+          
+          <div class="notification-alert-box">
+            <div class="notification-alert-title">🔔 最新情報の受け取り方について</div>
+            <div class="notification-alert-text">
+              今後の公式発売情報、予約再開、入荷情報などをタイムリーに確認するために、<strong>ハズブロジャパン・アクションブランド（@HasbroJP_Action）</strong>の公式Xアカウントを<strong>フォローし、通知（ベルマーク）をON</strong>にしておくことを強く推奨します。
+            </div>
+            <a href="https://x.com/HasbroJP_Action" target="_blank" class="account-link-btn">
+              Xで @HasbroJP_Action をフォロー＆通知ONにする ↗
+            </a>
+          </div>
+
+          <div class="tweets-wrapper" id="salesTweetsWrapper"></div>
+        </div>
+      </div>
+
+      <!-- ショート動画一括表示画面 -->
+      <div id="shortsContainer" class="shorts-container" style="display: none;"></div>
+    </div>
+  </div>
+
+  <script>
+    const menuGroups = [
+      {
+        category: "情報",
+        badgeClass: "title-info",
+        items: [
+          { 
+            name: "HLJ 抽選販売（スタンダード）", 
+            url: "https://support.hlj.co.jp/hc/ja/articles/60798299190297--%E6%8A%BD%E9%81%B8%E8%B2%A9%E5%A3%B2-%E3%82%B9%E3%82%BF%E3%83%BC-%E3%82%A6%E3%82%A9%E3%82%BA-%E3%82%A2%E3%83%AB%E3%83%86%E3%82%A3%E3%83%A1%E3%83%83%E3%83%88-%E3%82%B0%E3%83%AD%E3%83%BC%E3%82%B0%E3%83%BC%E6%8A%BD%E9%81%B8%E8%B2%A9%E5%A3%B2%E5%BF%9C%E5%8B%9F%E6%A6%82%E8%A6%81", 
+            tweetStatusId: "2085236809605546251",
+            type: "lottery" 
+          },
+          {
+            name: "販売情報について",
+            url: "https://x.com/HasbroJP_Action",
+            tweetUrls: [
+              "https://x.com/stswcb2025/status/2083120693470957764",
+              "https://x.com/HasbroJP_Action/status/2082990544716963936"
+            ],
+            type: "sales_info"
+          }
+        ]
+      },
+      {
+        category: "取扱ショップ（スタンダード）",
+        badgeClass: "title-standard",
+        items: [
+          { name: "ホビーリンク・ジャパン", url: "https://www.hlj.co.jp/product/HBR46809", type: "shop", blocked: true },
+          { name: "あみあみ", url: "https://www.amiami.jp/top/detail/detail?gcode=FIGURE-206462", type: "shop", blocked: true },
+          { name: "楽天ブックス", url: "https://books.rakuten.co.jp/rb/18725016/?l-id=search-c-item-text-01", type: "shop", blocked: false },
+          { name: "ホビーサーチ", url: "https://www.1999.co.jp/11443527", type: "shop", blocked: true },
+          { name: "DMM", url: "https://www.dmm.com/mono/hobby/-/detail/=/cid=c260800724/", type: "shop", blocked: false },
+          { name: "Amazon", url: "https://www.amazon.co.jp/dp/B0GX1FZYSW/", note: "※ 10万円以上の転売ヤー出品あり注意", type: "shop", blocked: true },
+          { name: "トイザらス", url: "https://www.toysrus.co.jp/ja-jp/8358109-10160919.html", type: "shop", blocked: true }
+        ]
+      },
+      {
+        category: "取扱ショップ（初回リミテッド）",
+        badgeClass: "title-limited",
+        items: [
+          { name: "ホビーリンク・ジャパン", url: "https://www.hlj.co.jp/product/HBR43147", type: "shop", blocked: true },
+          { name: "あみあみ", url: "https://www.amiami.jp/top/detail/detail?gcode=FIGURE-202423", type: "shop", blocked: true },
+          { name: "楽天ブックス", url: "https://books.rakuten.co.jp/rb/18638775/?l-id=search-c-item-text-02", type: "shop", blocked: false },
+          { name: "ホビーサーチ", url: "https://www.1999.co.jp/11387779", type: "shop", blocked: true },
+          { name: "DMM", url: "http://www.dmm.com/mono/hobby/-/detail/=/cid=c260502271/", type: "shop", blocked: false },
+          { name: "Amazon", url: "https://www.amazon.co.jp/dp/B0G2PCM7SQ", type: "shop", blocked: true }
+        ]
+      },
+      {
+        category: "紹介動画",
+        badgeClass: "title-video",
+        items: [
+          { name: "Ultimate Grogu", embedUrl: "https://www.youtube-nocookie.com/embed/uV87cT_pa6Q", url: "https://www.youtube.com/watch?v=uV87cT_pa6Q", type: "youtube" },
+          { name: "I Met Ultimate Grogu! How Hasbro's $599 Animatronic Works", embedUrl: "https://www.youtube-nocookie.com/embed/RjdMIAspWwc", url: "https://www.youtube.com/watch?v=RjdMIAspWwc", type: "youtube" },
+          { name: "How Hasbro's Animatronic Grogu Works", embedUrl: "https://www.youtube-nocookie.com/embed/CCTbWuZIOlU", url: "https://www.youtube.com/watch?v=CCTbWuZIOlU", type: "youtube" },
+          { name: "This $600 Grogu Is Practically And Totally Adorable | Comic Con 2026", embedUrl: "https://www.youtube-nocookie.com/embed/R7g9Hyk9K5g", url: "https://www.youtube.com/watch?v=R7g9Hyk9K5g", type: "youtube" },
+          { name: "SDCC 2026 Hasbro Star Wars Ultimate Grogu", embedUrl: "https://www.youtube-nocookie.com/embed/bYz024S0N9E", url: "https://www.youtube.com/watch?v=bYz024S0N9E", type: "youtube" },
+          { name: "We found the Ultimate Grogu that you can Buy at SDCC 2026", embedUrl: "https://www.youtube-nocookie.com/embed/pby_lgS59Nk", url: "https://www.youtube.com/watch?v=pby_lgS59Nk", type: "youtube" },
+          { name: "Hasbro's $600 Ultimate Grogu animatronic makes public debut at SDCC", embedUrl: "https://www.youtube-nocookie.com/embed/l__EgYRKvEU", url: "https://www.youtube.com/watch?v=l__EgYRKvEU", type: "youtube" }
+        ]
+      },
+      {
+        category: "ショート動画集",
+        badgeClass: "title-shorts",
+        items: [
+          {
+            name: "YouTube Shorts 集",
+            type: "shorts_collection",
+            url: "https://www.youtube.com/",
+            shortsList: [
+              { id: "oeHIr5F208s", embedUrl: "https://www.youtube-nocookie.com/embed/oeHIr5F208s", url: "https://www.youtube.com/shorts/oeHIr5F208s" },
+              { id: "UqwRgNHSRvQ", embedUrl: "https://www.youtube-nocookie.com/embed/UqwRgNHSRvQ", url: "https://www.youtube.com/shorts/UqwRgNHSRvQ" },
+              { id: "_2qWRAWb940", embedUrl: "https://www.youtube-nocookie.com/embed/_2qWRAWb940", url: "https://www.youtube.com/shorts/_2qWRAWb940" },
+              { id: "1F1Pi3zKAm8", embedUrl: "https://www.youtube-nocookie.com/embed/1F1Pi3zKAm8", url: "https://www.youtube.com/shorts/1F1Pi3zKAm8" },
+              { id: "zcVEdM0dV7Q", embedUrl: "https://www.youtube-nocookie.com/embed/zcVEdM0dV7Q", url: "https://www.youtube.com/shorts/zcVEdM0dV7Q" },
+              { id: "5Qg4X-Anqds", embedUrl: "https://www.youtube-nocookie.com/embed/5Qg4X-Anqds", url: "https://www.youtube.com/shorts/5Qg4X-Anqds" },
+              { id: "GwcO0JlGCKY", embedUrl: "https://www.youtube-nocookie.com/embed/GwcO0JlGCKY", url: "https://www.youtube.com/shorts/GwcO0JlGCKY" },
+            ]
+          }
+        ]
+      }
+    ];
+
+    const menuContainer = document.getElementById('menuContainer');
+    const contentFrame = document.getElementById('contentFrame');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const lotteryContainer = document.getElementById('lotteryContainer');
+    const lotteryArticleBtn = document.getElementById('lotteryArticleBtn');
+    const lotteryTweetBox = document.getElementById('lotteryTweetBox');
+    const salesInfoContainer = document.getElementById('salesInfoContainer');
+    const salesTweetsWrapper = document.getElementById('salesTweetsWrapper');
+    const shortsContainer = document.getElementById('shortsContainer');
+    const currentInfo = document.getElementById('currentInfo');
+    const externalBtn = document.getElementById('externalBtn');
+    const reloadBtn = document.getElementById('reloadBtn');
+    const backToShortsBtn = document.getElementById('backToShortsBtn');
+
+    let currentItemData = null;
+    let currentCategoryData = '';
+    let lastShortsItem = null;
+
+    contentFrame.onload = function() {
+      if (contentFrame.src && !contentFrame.src.endsWith('about:blank')) {
+        loadingOverlay.style.display = 'none';
+      }
+    };
+
+    reloadBtn.onclick = function() {
+      if (!currentItemData) return;
+      const activeEl = document.querySelector('.link-item.active');
+      handleItemClick(currentItemData, currentCategoryData, activeEl);
+    };
+
+    backToShortsBtn.onclick = function() {
+      backToShortsBtn.style.display = 'none';
+      contentFrame.style.display = 'none';
+      contentFrame.src = 'about:blank';
+      if (lastShortsItem) {
+        currentInfo.textContent = `YouTube Shorts 集 (ショート動画集)`;
+        externalBtn.href = lastShortsItem.url;
+      }
+      shortsContainer.style.display = 'grid';
+    };
+
+    menuGroups.forEach((group) => {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'section-group';
+
+      const titleDiv = document.createElement('div');
+      titleDiv.className = `section-title ${group.badgeClass}`;
+      titleDiv.textContent = group.category;
+      groupDiv.appendChild(titleDiv);
+
+      group.items.forEach((item) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'link-item';
+        itemDiv.onclick = function() { handleItemClick(item, group.category, this); };
+
+        let badgeHtml = '';
+        if (item.type === 'shop' && item.blocked) {
+          badgeHtml = '<span class="badge-block">別タブ</span>';
+        } else if (item.type === 'youtube') {
+          badgeHtml = '<span class="badge-video">動画</span>';
+        } else if (item.type === 'shorts_collection') {
+          badgeHtml = '<span class="badge-video">Shorts</span>';
+        } else if (item.type === 'lottery') {
+          badgeHtml = '<span class="badge-lottery">抽選</span>';
+        } else if (item.type === 'sales_info') {
+          badgeHtml = '<span class="badge-info">案内</span>';
+        }
+
+        const noteHtml = item.note ? `<div class="note-text">${item.note}</div>` : '';
+
+        itemDiv.innerHTML = `
+          <div class="shop-header-row">
+            <span class="shop-name">${item.name}</span>
+            ${badgeHtml}
+          </div>
+          ${noteHtml}
+        `;
+        groupDiv.appendChild(itemDiv);
+      });
+
+      menuContainer.appendChild(groupDiv);
+    });
+
+    function handleItemClick(item, category, element) {
+      if (item.type === 'shop' && item.blocked) {
+        window.open(item.url, '_blank');
+        return;
+      }
+
+      currentItemData = item;
+      currentCategoryData = category;
+
+      backToShortsBtn.style.display = 'none';
+
+      document.querySelectorAll('.link-item').forEach(el => el.classList.remove('active'));
+      if (element) element.classList.add('active');
+
+      const titleText = `${item.name} (${category})`;
+      currentInfo.textContent = titleText;
+      externalBtn.href = item.url || '#';
+
+      loadingOverlay.style.display = 'none';
+      contentFrame.style.display = 'none';
+      lotteryContainer.style.display = 'none';
+      salesInfoContainer.style.display = 'none';
+      shortsContainer.style.display = 'none';
+      contentFrame.src = 'about:blank';
+
+      if (item.type === 'lottery') {
+        lotteryContainer.style.display = 'flex';
+        lotteryArticleBtn.href = item.url;
+        
+        lotteryTweetBox.innerHTML = `<blockquote class="twitter-tweet" data-media-max-width="560"><a href="https://twitter.com/stswcb2025/status/${item.tweetStatusId}"></a></blockquote>`;
+        if (window.twttr && window.twttr.widgets) {
+          window.twttr.widgets.load(lotteryTweetBox);
+        }
+      } else if (item.type === 'sales_info') {
+        salesInfoContainer.style.display = 'flex';
+        salesTweetsWrapper.innerHTML = '';
+        
+        item.tweetUrls.forEach(tweetUrl => {
+          const tweetBox = document.createElement('div');
+          tweetBox.className = 'tweet-box';
+          tweetBox.innerHTML = `<blockquote class="twitter-tweet" data-media-max-width="560"><a href="${tweetUrl}"></a></blockquote>`;
+          salesTweetsWrapper.appendChild(tweetBox);
+        });
+
+        if (window.twttr && window.twttr.widgets) {
+          window.twttr.widgets.load(salesTweetsWrapper);
+        }
+      } else if (item.type === 'shop') {
+        loadingOverlay.style.display = 'flex';
+        contentFrame.style.display = 'block';
+        setTimeout(() => {
+          contentFrame.src = item.url;
+        }, 50);
+      } else if (item.type === 'youtube') {
+        loadingOverlay.style.display = 'flex';
+        contentFrame.style.display = 'block';
+        setTimeout(() => {
+          contentFrame.src = item.embedUrl;
+        }, 50);
+      } else if (item.type === 'shorts_collection') {
+        lastShortsItem = item;
+        shortsContainer.style.display = 'grid';
+        shortsContainer.innerHTML = '';
+
+        item.shortsList.forEach((short, idx) => {
+          const card = document.createElement('div');
+          card.className = 'short-card';
+          
+          card.onclick = function() {
+            currentInfo.textContent = `YouTube Shorts #${idx + 1} (ショート動画集)`;
+            externalBtn.href = short.url;
+            
+            shortsContainer.style.display = 'none';
+            backToShortsBtn.style.display = 'inline-flex';
+            
+            loadingOverlay.style.display = 'flex';
+            contentFrame.style.display = 'block';
+            setTimeout(() => {
+              contentFrame.src = short.embedUrl;
+            }, 50);
+          };
+
+          const thumbUrl = `https://img.youtube.com/vi/${short.id}/hqdefault.jpg`;
+
+          card.innerHTML = `
+            <div class="short-thumb-wrapper">
+              <img src="${thumbUrl}" alt="Shorts #${idx + 1}" loading="lazy">
+              <div class="play-icon-overlay">
+                <div class="play-circle">
+                  <div class="play-triangle"></div>
+                </div>
+              </div>
+            </div>
+            <div class="short-card-footer">
+              ここで再生 #${idx + 1} ▶
+            </div>
+          `;
+          shortsContainer.appendChild(card);
+        });
+      }
+    }
+
+    const firstLink = document.querySelector('.link-item');
+    if (firstLink) {
+      firstLink.click();
+    }
+  </script>
+</body>
+</html>
