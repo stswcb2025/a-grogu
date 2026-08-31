@@ -2,34 +2,37 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>アルティメット・グローグーの道 情報＆ショップ一覧</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; height: 100dvh; overflow: hidden; background: #f4f5f7; color: #333; }
-    
+
     /* 左側サイドバー */
     .sidebar { width: 380px; background: #ffffff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; flex-shrink: 0; }
-    
+
     /* 左上ヘッダーエリア */
     .header { padding: 18px 16px; background: #1a202c; color: #ffffff; display: flex; align-items: center; gap: 16px; }
     .header-img { width: 100px; height: 100px; object-fit: contain; background: #ffffff; border-radius: 10px; padding: 4px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
     .header-text { flex: 1; min-width: 0; }
     .header h1 { font-size: 16px; font-weight: 700; margin-bottom: 6px; line-height: 1.35; color: #f7fafc; white-space: nowrap; }
     .header p { font-size: 11px; color: #a0aec0; line-height: 1.4; white-space: nowrap; }
-    
-    .shop-list { flex: 1; overflow-y: auto; padding: 16px; }
-    
+
+    /* スマホ用ヘッダー（ドロワー内に出す簡易版） */
+    .mobile-drawer-header { display: none; }
+
+    .shop-list { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
+
     .section-group { margin-bottom: 24px; }
     .section-title { font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 6px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-    
+
     /* カテゴリ別の色設定 */
     .title-info { background: #fffaf0; color: #9c4221; border-left: 4px solid #dd6b20; }
     .title-standard { background: #e6fffa; color: #234e52; border-left: 4px solid #319795; }
     .title-limited { background: #fff5f5; color: #742a2a; border-left: 4px solid #e53e3e; }
     .title-video { background: #ebf8ff; color: #2c5282; border-left: 4px solid #3182ce; }
     .title-shorts { background: #faf5ff; color: #553c9a; border-left: 4px solid #805ad5; }
-    
+
     .link-item { display: flex; flex-direction: column; padding: 10px 12px; margin-bottom: 8px; background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; text-decoration: none; color: #2b6cb0; font-size: 13px; cursor: pointer; transition: all 0.15s ease; }
     .link-item:hover { background: #ebf8ff; border-color: #3182ce; }
     .link-item.active { background: #3182ce; color: #ffffff; border-color: #3182ce; }
@@ -37,7 +40,7 @@
     .link-item.active .note-text { color: #feebc8; }
     .link-item.active .badge-block { background: #edf2f7; color: #2d3748; }
     .link-item.active .badge-video, .link-item.active .badge-lottery, .link-item.active .badge-info { background: #feebc8; color: #744210; }
-    
+
     .shop-header-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .shop-name { font-size: 13px; font-weight: 600; color: #2d3748; line-height: 1.4; }
     .badge-block { font-size: 10px; background: #edf2f7; color: #718096; padding: 2px 6px; border-radius: 4px; font-weight: 600; flex-shrink: 0; }
@@ -46,7 +49,7 @@
     .badge-info { font-size: 10px; background: #e2e8f0; color: #2d3748; padding: 2px 6px; border-radius: 4px; font-weight: 600; flex-shrink: 0; }
     .note-text { font-size: 11px; color: #e53e3e; margin-top: 4px; line-height: 1.3; }
 
-    /* サイドバー最下部フッター */
+    /* 最下部：作成者リンク */
     .sidebar-footer { padding: 12px 16px; background: #edf2f7; border-top: 1px solid #e2e8f0; font-size: 12px; text-align: center; }
     .author-link { color: #2b6cb0; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: color 0.2s; }
     .author-link:hover { color: #1a365d; text-decoration: underline; }
@@ -56,19 +59,34 @@
     .top-bar { padding: 10px 20px; background: #f7fafc; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
     .current-info { font-size: 13px; color: #4a5568; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
     .top-bar-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    
-    .reload-btn { font-size: 12px; font-weight: 600; color: #2d3748; background: #edf2f7; border: 1px solid #cbd5e0; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px; }
+
+    .menu-toggle-btn { display: none; font-size: 18px; color: #2d3748; background: #edf2f7; border: 1px solid #cbd5e0; width: 36px; height: 36px; border-radius: 6px; cursor: pointer; align-items: center; justify-content: center; flex-shrink: 0; }
+    .menu-toggle-btn:active { background: #e2e8f0; }
+
+    .reload-btn { font-size: 12px; font-weight: 600; color: #2d3748; background: #edf2f7; border: 1px solid #cbd5e0; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
     .reload-btn:hover { background: #e2e8f0; color: #1a202c; }
-    
+
     .open-btn { font-size: 12px; font-weight: 600; color: #ffffff; background: #3182ce; padding: 6px 14px; border-radius: 6px; text-decoration: none; white-space: nowrap; transition: background 0.2s; }
     .open-btn:hover { background: #2b6cb0; }
-    
+
     .content-wrapper { flex: 1; position: relative; background: #edf2f7; overflow: hidden; }
     iframe { width: 100%; height: 100%; border: none; }
-    
+
+    /* iframeを載せるステージ。通常はフル表示、ショート再生時は縦長(9:16)に収める */
+    .frame-stage { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: center; background: #edf2f7; z-index: 1; }
+    .frame-stage #contentFrame { width: 100%; height: 100%; border: none; display: block; }
+    .frame-stage.vertical-mode { background: #000; }
+    .frame-stage.vertical-mode #contentFrame {
+      width: auto;
+      height: 100%;
+      max-width: 100%;
+      aspect-ratio: 9 / 16;
+      border-radius: 12px;
+    }
+
     /* ローディング画面 */
     .loading-overlay {
-      position: absolute; inset: 0; background: #ffffff; display: flex;
+      position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: #ffffff; display: flex;
       flex-direction: column; align-items: center; justify-content: center;
       gap: 12px; z-index: 10; color: #4a5568; font-size: 13px; text-align: center; padding: 24px;
     }
@@ -87,8 +105,9 @@
 
     /* 汎用スクロールコンテナ */
     .scroll-container {
-      position: absolute; inset: 0; overflow-y: auto; padding: 24px;
+      position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow-y: auto; padding: 24px;
       background: #f8fafc; display: flex; flex-direction: column; align-items: center; gap: 20px; z-index: 5;
+      -webkit-overflow-scrolling: touch;
     }
     .info-card {
       background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;
@@ -96,7 +115,7 @@
     }
     .info-title { font-size: 18px; font-weight: 700; color: #1a202c; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
     .info-desc { font-size: 13px; color: #4a5568; line-height: 1.6; margin-bottom: 16px; }
-    
+
     /* X通知案内用カード */
     .notification-alert-box {
       background: #ebf8ff; border: 1px solid #bee3f8; border-radius: 8px; padding: 16px; margin-bottom: 20px;
@@ -117,20 +136,21 @@
       border-radius: 8px; transition: background 0.2s; margin-bottom: 20px;
     }
     .lottery-link-btn:hover { background: #c05621; }
-    
+
     .tweets-wrapper { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; min-height: 300px; }
     .tweet-box { display: flex; justify-content: center; width: 100%; min-height: 200px; }
 
     /* ショート動画一覧 */
     .shorts-container {
-      position: absolute; inset: 0; overflow-y: auto; padding: 24px; 
-      background: #0f172a; display: grid; 
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+      position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow-y: auto; padding: 24px;
+      background: #0f172a; display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 20px; justify-items: center; align-content: start; z-index: 5;
+      -webkit-overflow-scrolling: touch;
     }
     .short-card {
       width: 100%; max-width: 240px; display: flex; flex-direction: column;
-      background: #1e293b; border-radius: 12px; overflow: hidden; 
+      background: #1e293b; border-radius: 12px; overflow: hidden;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); border: 1px solid #334155;
       cursor: pointer; transition: transform 0.2s, border-color 0.2s;
     }
@@ -141,18 +161,20 @@
     .short-thumb-wrapper {
       position: relative;
       width: 100%;
-      aspect-ratio: 9 / 16;
+      padding-top: 177.78%; /* 9:16の比率を width基準で確保（aspect-ratio非対応環境でも崩れない） */
       background: #000;
       overflow: hidden;
     }
     .short-thumb-wrapper img {
+      position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
     .play-icon-overlay {
       position: absolute;
-      inset: 0;
+      top: 0; right: 0; bottom: 0; left: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -185,16 +207,72 @@
       font-size: 12px; color: #38bdf8; font-weight: 600;
     }
 
-    /* スマホ・小画面対応（ヘッダー非表示＆メインエリアを広く確保） */
+    /* ドロワー用の半透明背景（デフォルトは非表示） */
+    .drawer-backdrop { display: none; }
+
+    /* ==========================================================
+       スマホ・小画面対応
+       サイドバーは常時ドロワー（画面外にスライド収納）にして、
+       メインの表示エリア（動画・ショップ・情報）を常にフル画面で
+       見られるようにする。
+       ========================================================== */
     @media (max-width: 768px) {
-      body { flex-direction: column; }
-      .sidebar { width: 100% !important; height: 32vh; max-height: 200px; }
-      .header { display: none !important; } /* デカいヘッダーを非表示 */
-      .main-pane { flex: 1; height: auto; } /* 残りのスペースをすべてメイン表示に割り当てて見切れ防止 */
-      
+      body { flex-direction: column; overflow: hidden; }
+
+      /* サイドバーを画面左からスライドインするドロワーに変更 */
+      .sidebar {
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        width: min(86vw, 340px);
+        height: 100dvh;
+        max-height: none;
+        z-index: 30;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: 2px 0 16px rgba(0,0,0,0.25);
+      }
+      .sidebar.open { transform: translateX(0); }
+
+      /* PC用の大きいヘッダーは隠し、ドロワー用の軽量ヘッダーを出す */
+      .header { display: none !important; }
+      .mobile-drawer-header {
+        display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        padding: 12px 14px; background: #1a202c; color: #fff; flex-shrink: 0;
+      }
+      .mobile-drawer-header .mdh-title { font-size: 14px; font-weight: 700; line-height: 1.3; }
+      .mobile-drawer-header .mdh-close {
+        width: 32px; height: 32px; flex-shrink: 0; border-radius: 6px; border: none;
+        background: rgba(255,255,255,0.15); color: #fff; font-size: 18px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+      }
+
+      /* ドロワーが開いた時の背景オーバーレイ（タップで閉じる） */
+      .drawer-backdrop.open {
+        display: block; position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(0,0,0,0.45); z-index: 25;
+      }
+
+      /* メインエリアは常にフル画面 */
+      .main-pane { flex: 1; height: 100%; width: 100%; }
+
+      /* トップバー：メニューボタンを表示、情報テキストは折返しなしで省略 */
+      .top-bar { padding: 8px 10px; gap: 6px; }
+      .menu-toggle-btn { display: inline-flex; }
+      .current-info { font-size: 12px; }
+      .top-bar-actions { gap: 6px; }
+      .reload-btn { padding: 6px 8px; font-size: 11px; }
+      .reload-btn span.reload-label { display: none; } /* アイコンのみでスペース節約 */
+      .open-btn { padding: 6px 10px; font-size: 11px; }
+
+      .shop-list { padding: 12px; }
+      .link-item { padding: 12px; font-size: 14px; }
+      .shop-name { font-size: 14px; }
+
+      .info-card { padding: 18px; }
+      .scroll-container { padding: 16px; }
+
       /* ショート動画をスマホでは1列にして大きく表示する */
       .shorts-container { grid-template-columns: 1fr; padding: 16px; gap: 16px; }
-      .short-card { max-width: 280px; margin: 0 auto; }
+      .short-card { max-width: 320px; margin: 0 auto; }
     }
   </style>
 
@@ -203,8 +281,11 @@
 </head>
 <body>
 
-  <!-- 左側：サイドバー -->
-  <div class="sidebar">
+  <!-- ドロワー背景オーバーレイ（スマホ時のみ機能） -->
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <!-- 左側：サイドバー（スマホではドロワー化） -->
+  <div class="sidebar" id="sidebar">
     <div class="header">
       <img src="https://cdn.media.amplience.net/i/hasbropulse/G4483_Ultimate_Grogu_1_front%201?w=320&fmt=auto" alt="アルティメット・グローグーの道" class="header-img">
       <div class="header-text">
@@ -212,8 +293,15 @@
         <p>予約情報 ＆ 取扱ショップ ＆ 動画コンテンツの道</p>
       </div>
     </div>
+
+    <!-- スマホ用の軽量ヘッダー（閉じるボタン付き） -->
+    <div class="mobile-drawer-header">
+      <span class="mdh-title">アルティメット・グローグーの道</span>
+      <button class="mdh-close" id="drawerCloseBtn" aria-label="メニューを閉じる">✕</button>
+    </div>
+
     <div class="shop-list" id="menuContainer"></div>
-    
+
     <!-- 最下部：作成者リンク -->
     <div class="sidebar-footer">
       作成者 <a href="https://x.com/stswcb2025" target="_blank" class="author-link">セレブレは終わらねぇ ↗</a>
@@ -223,15 +311,16 @@
   <!-- 右側：メイン表示エリア -->
   <div class="main-pane">
     <div class="top-bar">
+      <button class="menu-toggle-btn" id="menuToggleBtn" aria-label="メニューを開く">☰</button>
       <div class="current-info" id="currentInfo">読み込み中...</div>
       <div class="top-bar-actions">
         <!-- ショート動画再生時に表示される一覧へ戻るボタン -->
-        <button id="backToShortsBtn" class="reload-btn" style="display: none; background: #e2e8f0; color: #1a202c; font-weight: 700;">⬅ ショート一覧に戻る</button>
-        <button id="reloadBtn" class="reload-btn" title="コンテンツを再読み込み">🔄 再読み込み</button>
-        <a id="externalBtn" href="#" target="_blank" class="open-btn">新しいタブで直接開く ↗</a>
+        <button id="backToShortsBtn" class="reload-btn" style="display: none; background: #e2e8f0; color: #1a202c; font-weight: 700;">⬅ <span class="reload-label">ショート一覧に戻る</span></button>
+        <button id="reloadBtn" class="reload-btn" title="コンテンツを再読み込み">🔄 <span class="reload-label">再読み込み</span></button>
+        <a id="externalBtn" href="#" target="_blank" class="open-btn">新しいタブで開く ↗</a>
       </div>
     </div>
-    
+
     <div class="content-wrapper">
       <!-- ローディング画面 -->
       <div id="loadingOverlay" class="loading-overlay" style="display: none;">
@@ -240,15 +329,17 @@
         <div class="loading-hint-box">
           読み込みに時間がかかる場合や画面が表示されない場合は、右上にある<br>
           <strong>「🔄 再読み込み」</strong>で再取得するか、<br>
-          <strong>「新しいタブで直接開く ↗」</strong>から外部ページでご確認ください。
+          <strong>「新しいタブで開く ↗」</strong>から外部ページでご確認ください。
         </div>
       </div>
 
-      <!-- iframe埋め込み表示 -->
-      <iframe id="contentFrame" src="about:blank" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-              referrerpolicy="strict-origin-when-cross-origin" 
-              allowfullscreen></iframe>
+      <!-- iframe埋め込み表示（ショート再生時はvertical-modeで縦長にする） -->
+      <div class="frame-stage" id="frameStage">
+        <iframe id="contentFrame" src="about:blank"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen></iframe>
+      </div>
 
       <div id="lotteryContainer" class="scroll-container" style="display: none;">
         <div class="info-card">
@@ -273,7 +364,7 @@
       <div id="salesInfoContainer" class="scroll-container" style="display: none;">
         <div class="info-card">
           <h2 class="info-title">アルティメット・グローグー 発売情報・更新案内</h2>
-          
+
           <div class="notification-alert-box">
             <div class="notification-alert-title">🔔 最新情報の受け取り方について</div>
             <div class="notification-alert-text">
@@ -299,11 +390,11 @@
         category: "情報",
         badgeClass: "title-info",
         items: [
-          { 
-            name: "Amazonとトイザらスで予約受付中", 
-            url: "https://www.amazon.co.jp/dp/B0GX1FZYSW", 
+          {
+            name: "Amazonとトイザらスで予約受付中",
+            url: "https://www.amazon.co.jp/dp/B0GX1FZYSW",
             tweetStatusId: "2094264799366619316",
-            type: "lottery" 
+            type: "lottery"
           },
           {
             name: "販売情報について",
@@ -405,6 +496,25 @@
     const externalBtn = document.getElementById('externalBtn');
     const reloadBtn = document.getElementById('reloadBtn');
     const backToShortsBtn = document.getElementById('backToShortsBtn');
+    const frameStage = document.getElementById('frameStage');
+
+    // --- スマホ用ドロワー制御 ---
+    const sidebar = document.getElementById('sidebar');
+    const drawerBackdrop = document.getElementById('drawerBackdrop');
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+    const drawerCloseBtn = document.getElementById('drawerCloseBtn');
+
+    function openDrawer() {
+      sidebar.classList.add('open');
+      drawerBackdrop.classList.add('open');
+    }
+    function closeDrawer() {
+      sidebar.classList.remove('open');
+      drawerBackdrop.classList.remove('open');
+    }
+    menuToggleBtn.onclick = openDrawer;
+    drawerCloseBtn.onclick = closeDrawer;
+    drawerBackdrop.onclick = closeDrawer;
 
     let currentItemData = null;
     let currentCategoryData = '';
@@ -430,6 +540,7 @@
         currentInfo.textContent = `YouTube Shorts 集 (ショート動画集)`;
         externalBtn.href = lastShortsItem.url;
       }
+      frameStage.classList.remove('vertical-mode');
       shortsContainer.style.display = 'grid';
     };
 
@@ -486,6 +597,7 @@
 
       backToShortsBtn.style.display = 'none';
 
+      document.querySelectorAll ? null : null; // no-op guard (kept for safety)
       document.querySelectorAll('.link-item').forEach(el => el.classList.remove('active'));
       if (element) element.classList.add('active');
 
@@ -498,12 +610,16 @@
       lotteryContainer.style.display = 'none';
       salesInfoContainer.style.display = 'none';
       shortsContainer.style.display = 'none';
+      frameStage.classList.remove('vertical-mode');
       contentFrame.src = 'about:blank';
+
+      // スマホ表示では、項目を選んだらドロワーを自動で閉じてコンテンツを見せる
+      closeDrawer();
 
       if (item.type === 'lottery') {
         lotteryContainer.style.display = 'flex';
         lotteryArticleBtn.href = item.url;
-        
+
         lotteryTweetBox.innerHTML = `<blockquote class="twitter-tweet" data-media-max-width="560"><a href="https://twitter.com/stswcb2025/status/${item.tweetStatusId}"></a></blockquote>`;
         if (window.twttr && window.twttr.widgets) {
           window.twttr.widgets.load(lotteryTweetBox);
@@ -511,7 +627,7 @@
       } else if (item.type === 'sales_info') {
         salesInfoContainer.style.display = 'flex';
         salesTweetsWrapper.innerHTML = '';
-        
+
         item.tweetUrls.forEach(tweetUrl => {
           const tweetBox = document.createElement('div');
           tweetBox.className = 'tweet-box';
@@ -542,14 +658,15 @@
         item.shortsList.forEach((short, idx) => {
           const card = document.createElement('div');
           card.className = 'short-card';
-          
+
           card.onclick = function() {
             currentInfo.textContent = `YouTube Shorts #${idx + 1} (ショート動画集)`;
             externalBtn.href = short.url;
-            
+
             shortsContainer.style.display = 'none';
             backToShortsBtn.style.display = 'inline-flex';
-            
+
+            frameStage.classList.add('vertical-mode');
             loadingOverlay.style.display = 'flex';
             contentFrame.style.display = 'block';
             setTimeout(() => {
@@ -558,10 +675,13 @@
           };
 
           const thumbUrl = `https://img.youtube.com/vi/${short.id}/hqdefault.jpg`;
+          const thumbFallback1 = `https://img.youtube.com/vi/${short.id}/mqdefault.jpg`;
+          const thumbFallback2 = `https://img.youtube.com/vi/${short.id}/default.jpg`;
 
           card.innerHTML = `
             <div class="short-thumb-wrapper">
-              <img src="${thumbUrl}" alt="Shorts #${idx + 1}" loading="lazy">
+              <img src="${thumbUrl}" alt="Shorts #${idx + 1}" loading="lazy"
+                   onerror="if(this.dataset.step!=='1'){this.dataset.step='1';this.src='${thumbFallback1}';}else if(this.dataset.step!=='2'){this.dataset.step='2';this.src='${thumbFallback2}';}else{this.style.display='none';}">
               <div class="play-icon-overlay">
                 <div class="play-circle">
                   <div class="play-triangle"></div>
